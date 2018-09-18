@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="Main Menu"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnMenuHistogram"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="loadHistogram"
+            android:text="Histogram" />
+
+        <Button
+            android:id="@+id/btnMenuHistogramKuanti"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="loadHistogramKuantisasi"
+            android:text="Histogram Kuantisasi" />
+
+        <Button
+            android:id="@+id/btnMenuSmoothing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="loadSmoothing"
+            android:text="Smoothing" />
+
+        <Button
+            android:id="@+id/btnMenuOCR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="loadOCR"
+            android:text="OCR" />
+
+        <Button
+            android:id="@+id/btnMenuOCRSevenSegment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="loadOCRSevenSegment"
+            android:text="OCR Seven Segment" />
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
