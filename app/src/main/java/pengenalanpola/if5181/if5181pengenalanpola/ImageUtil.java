@@ -2,7 +2,11 @@ package pengenalanpola.if5181.if5181pengenalanpola;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImageUtil {
 
@@ -260,7 +264,7 @@ public class ImageUtil {
         return number;
     }
 
-    private static int[] getPixelColor(Bitmap bitmap, int x, int y) {
+    public static int[] getPixelColor(Bitmap bitmap, int x, int y) {
         int pixel, red, green, blue, grayscale;
 
         pixel = bitmap.getPixel(x, y);
@@ -322,4 +326,6 @@ public class ImageUtil {
     private static void setPixelColor(Bitmap bitmap, int x, int y, int red, int green, int blue) {
         bitmap.setPixel(x, y, Color.argb(255, red, green, blue));
     }
+
+
 }

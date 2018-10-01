@@ -37,4 +37,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, OCRSevenSegment.class);
         startActivity(intent);
     }
+
+    public void loadSkeleton(View view) {
+        Intent intent = new Intent(MainActivity.this, skeletonActivity.class);
+        startActivity(intent);
+    }
 }

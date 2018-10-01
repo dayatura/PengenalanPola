@@ -18,11 +18,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Histogram" android:parentActivityName=".MainActivity"/>
-        <activity android:name=".HistogramKuantisasi" android:parentActivityName=".MainActivity"/>
-        <activity android:name=".Smoothing" android:parentActivityName=".MainActivity"/>
-        <activity android:name=".OCR" android:parentActivityName=".MainActivity"/>
-        <activity android:name=".OCRSevenSegment" android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".Histogram"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".HistogramKuantisasi"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".Smoothing"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".OCR"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".OCRSevenSegment"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".skeletonActivity"
+            android:parentActivityName=".MainActivity" />
     </application>
 
 </manifest>

@@ -60,6 +60,14 @@
             android:layout_margin="12dp"
             android:onClick="loadOCRSevenSegment"
             android:text="OCR Seven Segment" />
+
+        <Button
+            android:id="@+id/btnMenuSkeleton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="loadSkeleton"
+            android:text="Skeleton" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
