@@ -6,10 +6,12 @@ import android.graphics.Point;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import pengenalanpola.if5181.if5181pengenalanpola.SkeletonFeature;
 
 public class ImageUtil {
 
@@ -331,9 +333,9 @@ public class ImageUtil {
     }
 
 
-    public static Bitmap getSkeletonFeature(Bitmap bitmap, TextView textView) {
+    public static void getSkeletonFeature(Bitmap bitmap, TextView textView) {
         int count;
-        int[] border;
+        int[] border, border2;
 
         int height = bitmap.getHeight();
         int width = bitmap.getWidth();
@@ -355,104 +357,284 @@ public class ImageUtil {
                     }
                     while (count != 0);
 
-                    stringBuffer.append(extractFeature(pixelsa, border[0], border[1], border[2], border[3], width));
+//                    stringBuffer.append(extractFeature(pixelsa, border[0], border[1], border[2], border[3], width));
+                    border2 = getNewBorder(pixelsa, border[0], border[1], border[2], border[3], width);
+                    SkeletonFeature sf = extractFeature(pixelsa, border2[0], border2[1], border2[2], border2[3], width);
+                    stringBuffer.append(String.format("%d,%b,%b,%b,%b,%b,%b,%b,%b,%b\r\n",
+                            sf.endpoints.size(),
+                            sf.hTop, sf.hMid, sf.hBottom,
+                            sf.vLeft, sf.vMid, sf.vRight,
+                            sf.lTop, sf.lMid, sf.lBottom));
                 }
             }
         }
 
         textView.setText(stringBuffer);
 
-        return Bitmap.createBitmap(pixelsa, width, height, bitmap.getConfig());
+//        return Bitmap.createBitmap(pixelsa, width, height, bitmap.getConfig());
     }
 
-    public static StringBuffer extractFeature(int[] pixels, int xmin, int ymin, int xmax, int ymax, int width) {
-        int next, i, j, neighbourCount;
+    ///// feature lama
 
-        int p = 0;
-        int endCount = 0;
-        int[][] moves = new int[8][8];
-        boolean end = false;
-        Queue<Integer> queue = new LinkedList<>();
+//    public static StringBuffer extractFeature(int[] pixels, int xmin, int ymin, int xmax, int ymax, int width) {
+//        int next, i, j, neighbourCount;
+//
+//        int p = 0;
+//        int endCount = 0;
+//        int[][] moves = new int[8][8];
+//        boolean end = false;
+//        Queue<Integer> queue = new LinkedList<>();
+//
+//        j = ymin;
+//        while (p == 0 && j <= ymax) {
+//            i = xmin;
+//            while (p == 0 && i <= xmax) {
+//                if ((pixels[i + j * width] & 0x000000ff) == 0)
+//                    p = i + j * width;
+//
+//                i++;
+//            }
+//            j++;
+//        }
+//
+//        if (p != 0) {
+//            next = p;
+//            int before = 2;
+//            int temp = 0;
+//            while (!end) {
+//                int[] neighbours = {
+//                        p - width,
+//                        p - width + 1,
+//                        p + 1,
+//                        p + width + 1,
+//                        p + width,
+//                        p + width - 1,
+//                        p - 1,
+//                        p - width - 1
+//                };
+//
+//                //Log.i("pixel", "" + p);
+//
+//                pixels[p] = pixels[p] | 0x0000ff00;
+//                neighbourCount = 0;
+//
+//                for (i = 0; i < 8; i++) {
+//                    if ((pixels[neighbours[i]] & 0x000000ff) == 0) {
+//                        neighbourCount++;
+//
+//                        if ((pixels[neighbours[i]] & 0x0000ff00) >> 8 == 0) {
+//                            moves[before][i]++;
+//                            if (next == p) {
+//                                next = neighbours[i];
+//                                temp = i;
+//                            } else {
+//                                queue.offer(neighbours[i]);
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                if (neighbourCount == 1) endCount++;
+//
+//                if (next != p) {
+//                    p = next;
+//                    before = temp;
+//                } else {
+//                    while (!queue.isEmpty() && (pixels[queue.peek()] & 0x0000ffff) != 0) {
+//                        queue.poll();
+//                    }
+//
+//                    if (queue.isEmpty()) {
+//                        end = true;
+//                    } else {
+//                        p = queue.poll();
+//                        next = p;
+//                    }
+//                }
+//            }
+//        }
+//
+//        StringBuffer stringBuffer = new StringBuffer();
+//        stringBuffer.append(String.format("End Count : %d\r\n", endCount));
+//        stringBuffer.append("Moves :\r\n");
+//        for (int a = 0; a < 8; a++) {
+//            for (int b = 0; b < 8; b++) {
+//                stringBuffer.append(String.format("%d %d | %d\r\n", a, b, moves[a][b]));
+//            }
+//        }
+//
+//        return stringBuffer;
+//    }
 
-        j = ymin;
-        while (p == 0 && j <= ymax) {
-            i = xmin;
-            while (p == 0 && i <= xmax) {
-                if ((pixels[i + j * width] & 0x000000ff) == 0)
-                    p = i + j * width;
 
-                i++;
-            }
-            j++;
-        }
+    public static SkeletonFeature extractFeature(int[] pixels, int xmin, int ymin, int xmax, int ymax, int width) {
 
-        if (p != 0) {
-            next = p;
-            int before = 2;
-            int temp = 0;
-            while (!end) {
-                int[] neighbours = {
-                        p - width,
-                        p - width + 1,
-                        p + 1,
-                        p + width + 1,
-                        p + width,
-                        p + width - 1,
-                        p - 1,
-                        p - width - 1
-                };
+        SkeletonFeature sf = new SkeletonFeature();
 
-                //Log.i("pixel", "" + p);
+        // titik ujung
+        List<Integer> endpoints = new ArrayList<>();
 
-                pixels[p] = pixels[p] | 0x0000ff00;
-                neighbourCount = 0;
+        for (int j = ymin; j <= ymax; j++) {
+            for (int i = xmin; i <= xmax; i++) {
+                int p = i + j * width;
 
-                for (i = 0; i < 8; i++) {
-                    if ((pixels[neighbours[i]] & 0x000000ff) == 0) {
-                        neighbourCount++;
+                if ((pixels[p] & 0x00ffffff) != 0x00ffffff) {
+                    int[] neighbour = {
+                            p - width,
+                            p - width + 1,
+                            p + 1,
+                            p + width + 1,
+                            p + width,
+                            p + width - 1,
+                            p - 1,
+                            p - width - 1
+                    };
+                    int black = 0;
+                    int index = -1;
 
-                        if ((pixels[neighbours[i]] & 0x0000ff00) >> 8 == 0) {
-                            moves[before][i]++;
-                            if (next == p) {
-                                next = neighbours[i];
-                                temp = i;
-                            } else {
-                                queue.offer(neighbours[i]);
-                            }
+                    for (int k = 0; k < neighbour.length; k++) {
+                        if ((pixels[neighbour[k]] & 0x00ffffff) != 0x00ffffff) {
+                            black++;
+                            index = k;
                         }
                     }
+
+                    if (black == 1) {
+                        endpoints.add((index + 4) % 8);
+                    }
                 }
+            }
+        }
 
-                if (neighbourCount == 1) endCount++;
+        sf.endpoints = endpoints;
 
-                if (next != p) {
-                    p = next;
-                    before = temp;
+        // garis tegak
+        int[] h = new int[ymax - ymin + 1];
+        int[] v = new int[xmax - xmin + 1];
+
+        for (int j = ymin; j <= ymax; j++) {
+            for (int i = xmin; i <= xmax; i++) {
+                int p = i + j * width;
+
+                if ((pixels[p] & 0x00ffffff) != 0x00ffffff) {
+                    h[j - ymin]++;
+                    v[i - xmin]++;
+                }
+            }
+        }
+
+        int[] hsum = new int[3];
+        for (int i = 0; i < h.length; i++) {
+            if (h[i] > (xmax - xmin + 1) / 2 && h[i] > 1) {
+                if (i < (ymax - ymin) * 4 / 10) {
+                    hsum[0]++;
+                } else if (i < (ymax - ymin) * 6 / 10) {
+                    hsum[1]++;
                 } else {
-                    while (!queue.isEmpty() && (pixels[queue.peek()] & 0x0000ffff) != 0) {
-                        queue.poll();
-                    }
+                    hsum[2]++;
+                }
+            }
+        }
 
-                    if (queue.isEmpty()) {
-                        end = true;
+        int[] vsum = new int[3];
+        for (int i = 0; i < v.length; i++) {
+            if (v[i] > (ymax - ymin + 1) / 2 && v[i] > 0) {
+                if (i < (xmax - xmin) * 4 / 10) {
+                    vsum[0]++;
+                } else if (i < (xmax - xmin) * 6 / 10) {
+                    vsum[1]++;
+                } else {
+                    vsum[2]++;
+                }
+            }
+        }
+
+        sf.hTop = hsum[0] > 0;
+        sf.hMid = hsum[1] > 0;
+        sf.hBottom = hsum[2] > 0;
+        sf.vLeft = vsum[0] > 0;
+        sf.vMid = vsum[1] > 0;
+        sf.vRight = vsum[2] > 0;
+
+        // lubang
+        int[] hole = new int[3];
+        for (int j = ymin; j <= ymax; j++) {
+            for (int i = xmin; i <= xmax; i++) {
+                int p = i + j * width;
+
+                if ((pixels[p] & 0x00ffffff) == 0x00ffffff) {
+                    int midpoint = holeFloodFill(pixels, xmin - 1, ymin - 1, xmax + 1, ymax + 1, width, p);
+
+                    if (midpoint / width < (ymax - ymin + 2) * 4 / 10 + (ymin - 1)) {
+                        hole[0]++;
+                    } else if (midpoint / width < (ymax - ymin + 2) * 6 / 10 + (ymin - 1)) {
+                        hole[1]++;
                     } else {
-                        p = queue.poll();
-                        next = p;
+                        hole[2]++;
                     }
                 }
             }
         }
 
-        StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append(String.format("End Count : %d\r\n", endCount));
-        stringBuffer.append("Moves :\r\n");
-        for (int a = 0; a < 8; a++) {
-            for (int b = 0; b < 8; b++) {
-                stringBuffer.append(String.format("%d %d | %d\r\n", a, b, moves[a][b]));
+        sf.lTop = hole[0] > 0;
+        sf.lMid = hole[1] - 1 > 0;
+        sf.lBottom = hole[2] > 0;
+
+        return sf;
+    }
+
+    public static int[] getNewBorder(int[] pixels, int xmin, int ymin, int xmax, int ymax, int width) {
+        int pxmin = (xmax + xmin) / 2;
+        int pxmax = (xmax + xmin) / 2;
+        int pymin = (ymax + ymin) / 2;
+        int pymax = (ymax + ymin) / 2;
+        for (int j = ymin; j <= ymax; j++) {
+            for (int i = xmin; i <= xmax; i++) {
+                int p = i + j * width;
+                if ((pixels[p] & 0x00ffffff) == 0x00000000) {
+                    if (p % width < pxmin) pxmin = p % width;
+                    if (p % width > pxmax) pxmax = p % width;
+                    if (p / width < pymin) pymin = p / width;
+                    if (p / width > pymax) pymax = p / width;
+                }
+            }
+        }
+        return new int[]{pxmin, pymin, pxmax, pymax};
+    }
+
+    private static int holeFloodFill(int[] pixels, int xmin, int ymin, int xmax, int ymax, int width, int p) {
+
+        int pxmin = p % width;
+        int pxmax = p % width;
+        int pymin = p / width;
+        int pymax = p / width;
+        Queue<Integer> queue = new ArrayDeque<>();
+
+        queue.offer(p);
+
+        while (!queue.isEmpty()) {
+            int pt = queue.poll();
+
+            if ((pixels[pt] & 0x00ffffff) == 0x00ffffff
+                    && xmin <= (pt % width)
+                    && (pt % width) <= xmax
+                    && ymin <= (pt / width)
+                    && (pt / width) <= ymax) {
+                pixels[pt] = (pixels[pt] & 0xff000000);
+
+                if (pt % width < pxmin) pxmin = pt % width;
+                if (pt % width > pxmax) pxmax = pt % width;
+                if (pt / width < pymin) pymin = pt / width;
+                if (pt / width > pymax) pymax = pt / width;
+
+                queue.offer(pt - width);
+                queue.offer(pt + 1);
+                queue.offer(pt + width);
+                queue.offer(pt - 1);
             }
         }
 
-        return stringBuffer;
+        return (pxmax + pxmin) / 2 + (pymax + pymin) / 2 * width;
     }
 
 }

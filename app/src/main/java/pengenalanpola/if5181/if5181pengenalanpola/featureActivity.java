@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.OutputStreamWriter;
+
 public class featureActivity extends AppCompatActivity {
 
     ImageView imageView;
@@ -32,6 +34,10 @@ public class featureActivity extends AppCompatActivity {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, Constant.IntentCode.LOAD_IMAGE);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
     }
 
@@ -57,6 +63,11 @@ public class featureActivity extends AppCompatActivity {
                     Bitmap image = (Bitmap) data.getExtras().get("data");
 
                     imageView.setImageBitmap(ImageUtil.getBinaryImage(image, 128));
+
+                } else if (requestCode == 3) {
+                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput("confDayat.txt", MODE_PRIVATE));
+                    outputStreamWriter.write("test");
+                    outputStreamWriter.close();
                 }
             }
 
@@ -80,9 +91,11 @@ public class featureActivity extends AppCompatActivity {
 
 
         Bitmap image = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        Bitmap result = ImageUtil.getSkeletonFeature(image, textView);
+        ImageUtil.getSkeletonFeature(image, textView);
 
-        imageView.setImageBitmap(result);
+//        Bitmap result = ImageUtil.getSkeletonFeature(image, textView);
+//
+//        imageView.setImageBitmap(result);
     }
 
 }
