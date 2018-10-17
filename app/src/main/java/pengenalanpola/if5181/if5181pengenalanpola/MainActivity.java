@@ -42,4 +42,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, skeletonActivity.class);
         startActivity(intent);
     }
+
+    public void loadFeature(View view) {
+        Intent intent = new Intent(MainActivity.this, featureActivity.class);
+        startActivity(intent);
+    }
 }

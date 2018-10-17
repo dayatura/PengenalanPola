@@ -36,6 +36,7 @@
         <activity
             android:name=".skeletonActivity"
             android:parentActivityName=".MainActivity" />
+        <activity android:name=".featureActivity"></activity>
     </application>
 
 </manifest>

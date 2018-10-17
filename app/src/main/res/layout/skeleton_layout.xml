@@ -63,6 +63,7 @@
             android:layout_marginLeft="6dp"
             android:layout_marginRight="12dp"
             android:layout_weight="1"
+            android:onClick="skeletonByMe"
             android:text="New App" />
     </LinearLayout>
 </LinearLayout>

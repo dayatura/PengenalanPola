@@ -4,9 +4,12 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class ImageUtil {
 
@@ -327,5 +330,129 @@ public class ImageUtil {
         bitmap.setPixel(x, y, Color.argb(255, red, green, blue));
     }
 
+
+    public static Bitmap getSkeletonFeature(Bitmap bitmap, TextView textView) {
+        int count;
+        int[] border;
+
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+        int size = height * width;
+        int[] pixels = new int[size];
+        int[] pixelsa = new int[size];
+        StringBuffer stringBuffer = new StringBuffer();
+
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        bitmap.getPixels(pixelsa, 0, width, 0, 0, width, height);
+
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                if ((pixels[i + j * width] & 0x000000ff) != 255) {
+                    border = Thinning.floodFill(pixels, i, j, width);
+
+                    do {
+                        count = Thinning.zhangSuenStep(pixelsa, border[0], border[1], border[2], border[3], width);
+                    }
+                    while (count != 0);
+
+                    stringBuffer.append(extractFeature(pixelsa, border[0], border[1], border[2], border[3], width));
+                }
+            }
+        }
+
+        textView.setText(stringBuffer);
+
+        return Bitmap.createBitmap(pixelsa, width, height, bitmap.getConfig());
+    }
+
+    public static StringBuffer extractFeature(int[] pixels, int xmin, int ymin, int xmax, int ymax, int width) {
+        int next, i, j, neighbourCount;
+
+        int p = 0;
+        int endCount = 0;
+        int[][] moves = new int[8][8];
+        boolean end = false;
+        Queue<Integer> queue = new LinkedList<>();
+
+        j = ymin;
+        while (p == 0 && j <= ymax) {
+            i = xmin;
+            while (p == 0 && i <= xmax) {
+                if ((pixels[i + j * width] & 0x000000ff) == 0)
+                    p = i + j * width;
+
+                i++;
+            }
+            j++;
+        }
+
+        if (p != 0) {
+            next = p;
+            int before = 2;
+            int temp = 0;
+            while (!end) {
+                int[] neighbours = {
+                        p - width,
+                        p - width + 1,
+                        p + 1,
+                        p + width + 1,
+                        p + width,
+                        p + width - 1,
+                        p - 1,
+                        p - width - 1
+                };
+
+                //Log.i("pixel", "" + p);
+
+                pixels[p] = pixels[p] | 0x0000ff00;
+                neighbourCount = 0;
+
+                for (i = 0; i < 8; i++) {
+                    if ((pixels[neighbours[i]] & 0x000000ff) == 0) {
+                        neighbourCount++;
+
+                        if ((pixels[neighbours[i]] & 0x0000ff00) >> 8 == 0) {
+                            moves[before][i]++;
+                            if (next == p) {
+                                next = neighbours[i];
+                                temp = i;
+                            } else {
+                                queue.offer(neighbours[i]);
+                            }
+                        }
+                    }
+                }
+
+                if (neighbourCount == 1) endCount++;
+
+                if (next != p) {
+                    p = next;
+                    before = temp;
+                } else {
+                    while (!queue.isEmpty() && (pixels[queue.peek()] & 0x0000ffff) != 0) {
+                        queue.poll();
+                    }
+
+                    if (queue.isEmpty()) {
+                        end = true;
+                    } else {
+                        p = queue.poll();
+                        next = p;
+                    }
+                }
+            }
+        }
+
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append(String.format("End Count : %d\r\n", endCount));
+        stringBuffer.append("Moves :\r\n");
+        for (int a = 0; a < 8; a++) {
+            for (int b = 0; b < 8; b++) {
+                stringBuffer.append(String.format("%d %d | %d\r\n", a, b, moves[a][b]));
+            }
+        }
+
+        return stringBuffer;
+    }
 
 }

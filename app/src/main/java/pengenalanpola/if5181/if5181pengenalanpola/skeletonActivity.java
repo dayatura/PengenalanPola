@@ -92,11 +92,24 @@ public class skeletonActivity extends AppCompatActivity {
     }
 
     public void skeletonByMe(View view){
-        Bitmap bitmap = ((BitmapDrawable) imgSource.getDrawable()).getBitmap();
+//        Bitmap bitmap = ((BitmapDrawable) imgSource.getDrawable()).getBitmap();
+//
+//        bitmap = Thinning.skeleton(bitmap);
+//
+//        imgSkeleton.setImageBitmap(bitmap);
 
-        bitmap = Thinning.skeleton(bitmap);
-
-        imgSkeleton.setImageBitmap(bitmap);
+        new Thread(new Runnable() {
+            public void run() {
+                Bitmap bitmap =((BitmapDrawable) imgSource.getDrawable()).getBitmap();
+                bitmap = Thinning.skeletonByMe(bitmap);
+                final Bitmap finalBitmap = bitmap;
+                imgSkeleton.post(new Runnable() {
+                    public void run() {
+                        imgSkeleton.setImageBitmap(finalBitmap);
+                    }
+                });
+            }
+        }).start();
     }
 
 }

@@ -68,6 +68,14 @@
             android:layout_margin="12dp"
             android:onClick="loadSkeleton"
             android:text="Skeleton" />
+
+        <Button
+            android:id="@+id/btnMenuFeature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="loadFeature"
+            android:text="Feature Extractor" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
