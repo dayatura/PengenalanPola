@@ -2,16 +2,14 @@ package pengenalanpola.if5181.if5181pengenalanpola;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import pengenalanpola.if5181.if5181pengenalanpola.SkeletonFeature;
 
 public class ImageUtil {
 
@@ -333,7 +331,7 @@ public class ImageUtil {
     }
 
 
-    public static void getSkeletonFeature(Bitmap bitmap, TextView textView) {
+    public static StringBuffer getSkeletonFeature(Bitmap bitmap, TextView textView) {
         int count;
         int[] border, border2;
 
@@ -343,6 +341,7 @@ public class ImageUtil {
         int[] pixels = new int[size];
         int[] pixelsa = new int[size];
         StringBuffer stringBuffer = new StringBuffer();
+        CharacterRecognition ChaRecog = new CharacterRecognition();
 
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
         bitmap.getPixels(pixelsa, 0, width, 0, 0, width, height);
@@ -360,16 +359,33 @@ public class ImageUtil {
 //                    stringBuffer.append(extractFeature(pixelsa, border[0], border[1], border[2], border[3], width));
                     border2 = getNewBorder(pixelsa, border[0], border[1], border[2], border[3], width);
                     SkeletonFeature sf = extractFeature(pixelsa, border2[0], border2[1], border2[2], border2[3], width);
-                    stringBuffer.append(String.format("%d,%b,%b,%b,%b,%b,%b,%b,%b,%b\r\n",
+
+
+                    String className = ChaRecog.predict(sf);
+//                    String className = "null";
+
+                    stringBuffer.append(String.format("Prediksi:%s -> %d,%d,%d,%d,%d,%d,%d,%d,%d,%b,%b,%b,%b,%b,%b,%b,%b,%b\r\n",
+                            className,
                             sf.endpoints.size(),
+                            sf.epHeading[0],
+                            sf.epHeading[1],
+                            sf.epHeading[2],
+                            sf.epHeading[3],
+                            sf.epHeading[4],
+                            sf.epHeading[5],
+                            sf.epHeading[6],
+                            sf.epHeading[7],
                             sf.hTop, sf.hMid, sf.hBottom,
                             sf.vLeft, sf.vMid, sf.vRight,
                             sf.lTop, sf.lMid, sf.lBottom));
                 }
             }
         }
-
+        String[] fitur = {stringBuffer.toString()};
+//        FileUtil.write("Fitur.csv", fitur);
         textView.setText(stringBuffer);
+
+        return stringBuffer;
 
 //        return Bitmap.createBitmap(pixelsa, width, height, bitmap.getConfig());
     }
@@ -499,8 +515,10 @@ public class ImageUtil {
                         }
                     }
 
+                    int heading = (index + 4) % 8;
                     if (black == 1) {
-                        endpoints.add((index + 4) % 8);
+                        sf.epHeading[heading]++;
+                        endpoints.add(heading);
                     }
                 }
             }

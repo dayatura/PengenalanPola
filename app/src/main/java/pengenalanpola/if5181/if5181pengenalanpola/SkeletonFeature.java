@@ -5,6 +5,9 @@ import java.util.List;
 public class SkeletonFeature {
 
     public List<Integer> endpoints;
+
+    public int[] epHeading = {0,0,0,0,0,0,0,0};
+
     public boolean hTop;
     public boolean hMid;
     public boolean hBottom;
@@ -14,5 +17,6 @@ public class SkeletonFeature {
     public boolean lTop;
     public boolean lMid;
     public boolean lBottom;
+
 
 }
