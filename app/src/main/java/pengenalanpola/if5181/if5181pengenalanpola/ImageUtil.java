@@ -361,7 +361,7 @@ public class ImageUtil {
                     SkeletonFeature sf = extractFeature(pixelsa, border2[0], border2[1], border2[2], border2[3], width);
 
 
-                    String className = ChaRecog.predict(sf);
+                    String className = ChaRecog.predicts(sf);
 //                    String className = "null";
 
                     stringBuffer.append(String.format("Prediksi:%s -> %d,%d,%d,%d,%d,%d,%d,%d,%d,%b,%b,%b,%b,%b,%b,%b,%b,%b\r\n",
@@ -381,8 +381,8 @@ public class ImageUtil {
                 }
             }
         }
-        String[] fitur = {stringBuffer.toString()};
-//        FileUtil.write("Fitur.csv", fitur);
+//        String[] fitur = {stringBuffer.toString()};
+//        FileUtil.write("Fiturs.csv", fitur);
         textView.setText(stringBuffer);
 
         return stringBuffer;

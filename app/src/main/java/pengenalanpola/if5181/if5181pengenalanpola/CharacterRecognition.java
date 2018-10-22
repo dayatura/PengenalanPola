@@ -50,7 +50,7 @@ public class CharacterRecognition {
             Arrays.asList("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P",
                     "Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j",
                     "k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1",
-                    "2","3","4","5","6","7","8","9")
+                    "2","3","4","6","8","9","5","7")
     );
 
     public  Instances dataUnpredicted;
@@ -153,6 +153,94 @@ public class CharacterRecognition {
         }
 
         return className;
+    }
+
+    public String predicts(SkeletonFeature sf){
+        String prediction = null;
+        switch (sf.endpoints.size()){
+            case 0:
+                if (sf.vLeft){
+                    if (sf.lMid)prediction = "D";
+                    else prediction = "B";
+                } else if (sf.lMid) prediction = "O";
+                else prediction = "8";
+                break;
+            case 1:
+                if (sf.epHeading[1]==1) prediction = "e";
+                else if (sf.hTop) prediction = "P";
+                else if (sf.vRight) prediction = "g";
+                else if (sf.lTop) prediction = "9";
+                else if (sf.lBottom) prediction = "6";
+                break;
+            case 2:
+                if (sf.hTop){
+                    if(sf.hMid) prediction = "R";
+                    else if (sf.hBottom) prediction = "Z";
+                    else prediction = "7";
+                }else if (sf.vLeft){
+                    if (sf.vRight) prediction = "U";
+                    else if (sf.lTop) prediction = "P";
+                    else if (sf.lBottom) prediction = "b";
+                    else prediction = "L";
+                }else if (sf.lMid) prediction = "Q";
+                else if (sf.hBottom){
+                    if (sf.vRight) prediction = "j";
+                    else if (sf.lTop) prediction = "A";
+                    else prediction = "2";
+                }else if (sf.epHeading[0] == 2) prediction = "J";
+                else if (sf.epHeading[1] == 1) prediction = "V";
+                else if (sf.epHeading[4] == 2) prediction = "a";
+                else if (sf.lTop) prediction = "q";
+                else if (sf.lBottom) prediction = "d";
+                else if (sf.epHeading[6] == 1) prediction = "G";
+                else if (sf.epHeading[4] == 0) prediction = "s";
+                else prediction = "I";
+                break;
+            case 3:
+                if (sf.vMid) prediction = "T";
+                else if (sf.epHeading[2] == 3) prediction = "E";
+                else if (sf.hTop){
+                    if (sf.vLeft) prediction = "F";
+                    else prediction = "5";
+                }else if (sf.epHeading[0] == 2){
+                    if (sf.epHeading[3] == 1) prediction = "v";
+                    else prediction = "u";
+                }else if(sf.hBottom) prediction = "4";
+                else if (sf.vLeft){
+                    if (!sf.vRight) prediction = "r";
+                    else if (sf.epHeading[7]==1) prediction = "n";
+                    else prediction = "h";
+                }else if (sf.vRight) prediction = "1";
+                else if (sf.epHeading[7]==0) prediction = "3";
+                else if (sf.epHeading[6]==0) prediction = "Y";
+                else prediction = "y";
+                break;
+            case 4:
+                if (sf.hMid) prediction = "H";
+                else if (sf.vMid){
+                    if (sf.vRight) prediction = "m";
+                    else prediction = "t";
+                }
+                else if (sf.hBottom) prediction = "z";
+                else if (sf.vRight) prediction = "N";
+                else if (sf.hTop) prediction = "f";
+                else if (sf.epHeading[0] == 0){
+                    if (sf.epHeading[4] == 0)prediction = "x";
+                    else prediction = "k";
+                }
+                else {
+                    if (sf.epHeading[4] == 0)prediction = "X";
+                    else prediction = "K";
+                }
+                break;
+            case 5:
+                if(sf.epHeading[4] == 3) prediction = "M";
+                else prediction = "W";
+                break;
+            default:
+                prediction = "unknown";
+        }
+        return prediction;
     }
     
 }
