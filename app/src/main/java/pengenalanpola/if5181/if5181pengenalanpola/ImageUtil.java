@@ -8,8 +8,12 @@ import android.widget.TextView;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
+
+import static android.content.ContentValues.TAG;
+import pengenalanpola.if5181.if5181pengenalanpola.VectorUtil;
 
 public class ImageUtil {
 
@@ -326,7 +330,7 @@ public class ImageUtil {
         }
     }
 
-    private static void setPixelColor(Bitmap bitmap, int x, int y, int red, int green, int blue) {
+    public static void setPixelColor(Bitmap bitmap, int x, int y, int red, int green, int blue) {
         bitmap.setPixel(x, y, Color.argb(255, red, green, blue));
     }
 
@@ -341,7 +345,8 @@ public class ImageUtil {
         int[] pixels = new int[size];
         int[] pixelsa = new int[size];
         StringBuffer stringBuffer = new StringBuffer();
-        CharacterRecognition ChaRecog = new CharacterRecognition();
+        StringBuffer stringPredict = new StringBuffer();
+//        CharacterRecognition ChaRecog = new CharacterRecognition();
 
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
         bitmap.getPixels(pixelsa, 0, width, 0, 0, width, height);
@@ -360,34 +365,122 @@ public class ImageUtil {
                     border2 = getNewBorder(pixelsa, border[0], border[1], border[2], border[3], width);
                     SkeletonFeature sf = extractFeature(pixelsa, border2[0], border2[1], border2[2], border2[3], width);
 
+////// program predict
+//                    String className = ChaRecog.predicts(sf);
 
-                    String className = ChaRecog.predicts(sf);
-//                    String className = "null";
 
-                    stringBuffer.append(String.format("Prediksi:%s -> %d,%d,%d,%d,%d,%d,%d,%d,%d,%b,%b,%b,%b,%b,%b,%b,%b,%b\r\n",
-                            className,
+//                    stringBuffer.append(String.format("Prediksi:%s -> %d,%d,%d,%d,%d,%d,%d,%d,%d,%b,%b,%b,%b,%b,%b,%b,%b,%b\r\n",
+//                            className,
+//                            sf.endpoints.size(),
+//                            sf.epHeading[0],
+//                            sf.epHeading[1],
+//                            sf.epHeading[2],
+//                            sf.epHeading[3],
+//                            sf.epHeading[4],
+//                            sf.epHeading[5],
+//                            sf.epHeading[6],
+//                            sf.epHeading[7],
+//                            sf.hTop, sf.hMid, sf.hBottom,
+//                            sf.vLeft, sf.vMid, sf.vRight,
+//                            sf.lTop, sf.lMid, sf.lBottom));
+////////////////////////////
+
+                    String epBerposisi = Arrays.deepToString(sf.ep).replace("[","").replace("]","").replace(" ", "");
+
+                    stringBuffer.append(String.format("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\r\n",
+
                             sf.endpoints.size(),
-                            sf.epHeading[0],
-                            sf.epHeading[1],
-                            sf.epHeading[2],
-                            sf.epHeading[3],
-                            sf.epHeading[4],
-                            sf.epHeading[5],
-                            sf.epHeading[6],
-                            sf.epHeading[7],
+                            sf.intersection,
+//                            sf.ep[0][0], sf.ep[0][1], sf.ep[0][2], sf.ep[0][3], sf.ep[0][4], sf.ep[0][5], sf.ep[0][6], sf.ep[0][7], sf.ep[0][8],
+//                            sf.ep[1][0], sf.ep[1][1], sf.ep[1][2], sf.ep[1][3], sf.ep[1][4], sf.ep[1][5], sf.ep[1][6], sf.ep[1][7], sf.ep[1][8],
+//                            sf.ep[2][0], sf.ep[2][1], sf.ep[2][2], sf.ep[2][3], sf.ep[2][4], sf.ep[2][5], sf.ep[2][6], sf.ep[2][7], sf.ep[2][8],
+//                            sf.ep[3][0], sf.ep[3][1], sf.ep[3][2], sf.ep[3][3], sf.ep[3][4], sf.ep[3][5], sf.ep[3][6], sf.ep[3][7], sf.ep[3][8],
+//                            sf.ep[4][0], sf.ep[4][1], sf.ep[4][2], sf.ep[4][3], sf.ep[4][4], sf.ep[4][5], sf.ep[4][6], sf.ep[4][7], sf.ep[4][8],
+//                            sf.ep[5][0], sf.ep[5][1], sf.ep[5][2], sf.ep[5][3], sf.ep[5][4], sf.ep[5][5], sf.ep[5][6], sf.ep[5][7], sf.ep[5][8],
+//                            sf.ep[6][0], sf.ep[6][1], sf.ep[6][2], sf.ep[6][3], sf.ep[6][4], sf.ep[6][5], sf.ep[6][6], sf.ep[6][7], sf.ep[6][8],
+//                            sf.ep[7][0], sf.ep[7][1], sf.ep[7][2], sf.ep[7][3], sf.ep[7][4], sf.ep[7][5], sf.ep[7][6], sf.ep[7][7], sf.ep[7][8],
+
                             sf.hTop, sf.hMid, sf.hBottom,
                             sf.vLeft, sf.vMid, sf.vRight,
-                            sf.lTop, sf.lMid, sf.lBottom));
+                            sf.lTop, sf.lMid, sf.lBottom,
+                            epBerposisi));
+
+//                    Log.d(TAG, sf.ep.toString());
+                    stringPredict.append(preditHW(sf)+" ");
                 }
             }
         }
-//        String[] fitur = {stringBuffer.toString()};
-//        FileUtil.write("Fiturs.csv", fitur);
-        textView.setText(stringBuffer);
+        String[] fitur = {stringBuffer.toString()};
+        FileUtil.write("fiturHW.csv", fitur);
 
-        return stringBuffer;
+
+//        textView.setText(stringBuffer);
+        textView.setText(stringPredict);
+
+//        return stringBuffer;
+        return  stringPredict;
 
 //        return Bitmap.createBitmap(pixelsa, width, height, bitmap.getConfig());
+    }
+
+    public static String preditHW(SkeletonFeature sf){
+
+        double[] fitur = {
+                sf.endpoints.size(),
+                sf.intersection,
+                sf.ep[0][0], sf.ep[0][1], sf.ep[0][2], sf.ep[0][3], sf.ep[0][4], sf.ep[0][5], sf.ep[0][6], sf.ep[0][7], sf.ep[0][8],
+                sf.ep[1][0], sf.ep[1][1], sf.ep[1][2], sf.ep[1][3], sf.ep[1][4], sf.ep[1][5], sf.ep[1][6], sf.ep[1][7], sf.ep[1][8],
+                sf.ep[2][0], sf.ep[2][1], sf.ep[2][2], sf.ep[2][3], sf.ep[2][4], sf.ep[2][5], sf.ep[2][6], sf.ep[2][7], sf.ep[2][8],
+                sf.ep[3][0], sf.ep[3][1], sf.ep[3][2], sf.ep[3][3], sf.ep[3][4], sf.ep[3][5], sf.ep[3][6], sf.ep[3][7], sf.ep[3][8],
+                sf.ep[4][0], sf.ep[4][1], sf.ep[4][2], sf.ep[4][3], sf.ep[4][4], sf.ep[4][5], sf.ep[4][6], sf.ep[4][7], sf.ep[4][8],
+                sf.ep[5][0], sf.ep[5][1], sf.ep[5][2], sf.ep[5][3], sf.ep[5][4], sf.ep[5][5], sf.ep[5][6], sf.ep[5][7], sf.ep[5][8],
+                sf.ep[6][0], sf.ep[6][1], sf.ep[6][2], sf.ep[6][3], sf.ep[6][4], sf.ep[6][5], sf.ep[6][6], sf.ep[6][7], sf.ep[6][8],
+                sf.ep[7][0], sf.ep[7][1], sf.ep[7][2], sf.ep[7][3], sf.ep[7][4], sf.ep[7][5], sf.ep[7][6], sf.ep[7][7], sf.ep[7][8],
+                sf.hTop, sf.hMid, sf.hBottom,
+                sf.vLeft, sf.vMid, sf.vRight,
+                sf.lTop, sf.lMid, sf.lBottom
+        };
+
+//        String[] karakters = FileUtil.load("fiturHW.csv");
+
+        String[] hasil = { /*"A",*/"S","H","R"};
+        double[][] characters = {/*{3,26,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},*/
+                                 {2,92,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0},
+                                 {6,7,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                                 {5,115,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+
+        double probs[] = new double[hasil.length];
+
+        for (int i = 0; i < hasil.length; i++){
+            double[] chara = characters[i];
+            probs[i] = VectorUtil.similarity(fitur,chara);
+            Log.d(TAG, "similiarity: "+probs[i]);
+        }
+
+
+        /// arg max for result
+
+
+        int maxAt = 0;
+
+        for (int i = 0; i < probs.length; i++) {
+            maxAt = probs[i] > probs[maxAt] ? i : maxAt;
+        }
+
+        return "\n"+hasil[maxAt] +" (" + probs[maxAt]+")" ;
+
+    }
+
+    public static String getPredictHW(double[] probs){
+        String[] hasil = {"A","H","I"};
+
+        int maxAt = 0;
+
+        for (int i = 0; i < probs.length; i++) {
+            maxAt = probs[i] > probs[maxAt] ? i : maxAt;
+        }
+
+        return hasil[maxAt];
     }
 
     ///// feature lama
@@ -490,6 +583,9 @@ public class ImageUtil {
         // titik ujung
         List<Integer> endpoints = new ArrayList<>();
 
+        int intersection = 0;
+
+//        Log.d(TAG, "extractFeature: huruf baru");
         for (int j = ymin; j <= ymax; j++) {
             for (int i = xmin; i <= xmax; i++) {
                 int p = i + j * width;
@@ -515,15 +611,29 @@ public class ImageUtil {
                         }
                     }
 
+
                     int heading = (index + 4) % 8;
                     if (black == 1) {
                         sf.epHeading[heading]++;
                         endpoints.add(heading);
-                    }
+
+                        //titik berarah
+                        int gridX = (xmax-xmin)/3 != 0 ? (xmax-xmin)/3 +1 : 1;
+                        int gridY = (ymax-ymin)/3 != 0 ? (ymax-ymin)/3 +1 : 1;
+
+                        int position = (1+(((i - xmin) / gridX)) + (((j - ymin) / gridY)) * 3) - 1;
+
+                        sf.ep[heading][position]++;
+
+                    } else if (black > 3) intersection++;
+
                 }
             }
         }
 
+
+//        Log.d(TAG, "jumlah cross = " + intersection);
+        sf.intersection = intersection;
         sf.endpoints = endpoints;
 
         // garis tegak
@@ -567,12 +677,21 @@ public class ImageUtil {
             }
         }
 
-        sf.hTop = hsum[0] > 0;
-        sf.hMid = hsum[1] > 0;
-        sf.hBottom = hsum[2] > 0;
-        sf.vLeft = vsum[0] > 0;
-        sf.vMid = vsum[1] > 0;
-        sf.vRight = vsum[2] > 0;
+        /// fitur dalam boolean
+//        sf.hTop = hsum[0] > 0;
+//        sf.hMid = hsum[1] > 0;
+//        sf.hBottom = hsum[2] > 0;
+//        sf.vLeft = vsum[0] > 0;
+//        sf.vMid = vsum[1] > 0;
+//        sf.vRight = vsum[2] > 0;
+
+        ////fitur dalam int
+        sf.hTop = hsum[0];
+        sf.hMid = hsum[1];
+        sf.hBottom = hsum[2];
+        sf.vLeft = vsum[0];
+        sf.vMid = vsum[1];
+        sf.vRight = vsum[2];
 
         // lubang
         int[] hole = new int[3];
@@ -594,9 +713,17 @@ public class ImageUtil {
             }
         }
 
-        sf.lTop = hole[0] > 0;
-        sf.lMid = hole[1] - 1 > 0;
-        sf.lBottom = hole[2] > 0;
+        //fitur dalam boolean
+//        sf.lTop = hole[0] > 0;
+//        sf.lMid = hole[1] - 1 > 0;
+//        sf.lBottom = hole[2] > 0;
+
+        //fitur dalam int
+        sf.lTop = hole[0];
+        sf.lMid = hole[1] - 1;
+        sf.lBottom = hole[2];
+
+
 
         return sf;
     }
@@ -655,4 +782,59 @@ public class ImageUtil {
         return (pxmax + pxmin) / 2 + (pymax + pymin) / 2 * width;
     }
 
+    public static Bitmap edgeDetection(Bitmap source) {
+        Bitmap result = source.copy(source.getConfig(), true);
+
+        result = ImageUtil.getSmoothingImage(result)[0];
+        int height = result.getHeight();
+        int width = result.getWidth();
+
+        int treshold = 70;
+
+        int [][][] sobel = {{{1, 0, -1},
+                             {2, 0, -2},
+                             {1, 0, -1}},
+
+                            {{1, 2, 1},
+                              {0, 0, 0},
+                              {-1, -2, -1}}};
+
+
+
+        int [][][] filter = sobel;
+
+        result = ImageUtil.getGrayscaleImage(result);
+
+        int [][] Gx = filter[0];
+        int [][] Gy = filter[1];
+
+        for (int i=0; i<height-2; i++){
+            for (int j=0; j<width-2; j++){
+
+                int [][] subImage = new int[3][3];
+                int sumX = 0;
+                int sumY = 0;
+                for (int m = 0; m<3; m++){
+                    for (int n = 0; n<3; n++){
+                        int pixelColor = ImageUtil.getPixelColor(source,m+j,n+i)[0];
+//                        sumX += Math.pow(pixelColor * Gx[m][n],2);
+//                        sumY += Math.pow(pixelColor * Gy[m][n],2);
+                        sumX += pixelColor * Gx[m][n];
+                        sumY += pixelColor * Gy[m][n];
+
+                    }
+                }
+
+
+                int sum = (int) Math.sqrt(Math.pow(sumX,2)+Math.pow(sumY,2));
+                sum = sum < 70 ? 0 : sum;
+//                sum = sumY;
+                ImageUtil.setPixelColor(result,j+1,i+1, sum, sum, sum);
+//                int [][] subImage = {{},{},{}};
+//                int S1 = VectorUtil.Sum(VectorUtil.cross(Gx,subImage));
+            }
+        }
+
+        return result;
+    }
 }

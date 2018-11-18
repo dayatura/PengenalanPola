@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import java.io.OutputStreamWriter;
 
-public class featureActivity extends AppCompatActivity {
+public class FaceRecogActivity extends AppCompatActivity {
 
     ImageView imageView;
     TextView textView;
@@ -27,7 +27,7 @@ public class featureActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_feature);
+        setContentView(R.layout.activity_face_recog);
 
         imageView = findViewById(R.id.imageView);
         textView = findViewById(R.id.textView);
@@ -39,6 +39,9 @@ public class featureActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
+        imageView.setImageBitmap(BitmapFactory.decodeFile("/storage/emulated/0/Pictures/LINE/kk.jpg"));
+//        process(imageView);
+        edgeDetect(imageView);
     }
 
     @Override
@@ -57,12 +60,13 @@ public class featureActivity extends AppCompatActivity {
                     cursor.close();
 
                     Bitmap image = BitmapFactory.decodeFile(imageString);
+//                    /storage/emulated/0/Pictures/LINE/kk.jpg
 
-                    imageView.setImageBitmap(ImageUtil.getBinaryImage(image, 128));
+                    imageView.setImageBitmap(image);
                 } else if (requestCode == Constant.IntentCode.OPEN_CAMERA && data.getExtras().get("data") != null) {
                     Bitmap image = (Bitmap) data.getExtras().get("data");
 
-                    imageView.setImageBitmap(ImageUtil.getBinaryImage(image, 128));
+                    imageView.setImageBitmap(image);
 
                 } else if (requestCode == 3) {
                     OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput("confDayat.txt", MODE_PRIVATE));
@@ -89,13 +93,35 @@ public class featureActivity extends AppCompatActivity {
 
     public void process(View view) {
 
+        new Thread(new Runnable() {
+            public void run() {
+                Bitmap image = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+                image = Face.detectFace(image);
+                final Bitmap finalBitmap = image;
+                imageView.post(new Runnable() {
+                    public void run() {
+                        imageView.setImageBitmap(finalBitmap);
+                    }
+                });
+            }
+        }).start();
 
-        Bitmap image = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        ImageUtil.getSkeletonFeature(image, textView);
-
-        Bitmap result = Thinning.zShuen(image);
-//
-        imageView.setImageBitmap(result);
     }
 
+    public void edgeDetect(View view) {
+
+        new Thread(new Runnable() {
+            public void run() {
+                Bitmap image = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+                image = ImageUtil.edgeDetection(image);
+                final Bitmap finalBitmap = image;
+                imageView.post(new Runnable() {
+                    public void run() {
+                        imageView.setImageBitmap(finalBitmap);
+                    }
+                });
+            }
+        }).start();
+
+    }
 }

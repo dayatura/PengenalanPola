@@ -16,4 +16,6 @@ public class VectorUtil {
         return s / (Math.sqrt(s1 * s2));
     }
 
+
+
 }

@@ -47,4 +47,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, featureActivity.class);
         startActivity(intent);
     }
+
+    public void loadFaceRecog(View view) {
+        Intent intent = new Intent(MainActivity.this, FaceRecogActivity.class);
+        startActivity(intent);
+    }
 }
