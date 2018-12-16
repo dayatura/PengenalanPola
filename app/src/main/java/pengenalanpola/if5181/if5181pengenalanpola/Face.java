@@ -63,7 +63,28 @@ public class Face {
 //            ImageUtil.setPixelColor(result,facePosition[0][0],facePosition[0][1],0,255,0);
         }
 
+
         return nameFace;
+    }
+
+    public static Bitmap drawControlPointFace(Bitmap image) {
+        Bitmap result = image.copy(image.getConfig(), true);
+
+        double newWidth = 200.0;
+        result = Bitmap.createScaledBitmap(
+                result, (int)newWidth, (int)(result.getHeight()*(newWidth/result.getWidth())),true);
+
+        List<int[][]> facePositions = getFacePositionMulti(result);
+
+        for (int[][]facePosition:facePositions
+                ) {
+
+            result = drawBoundary(result, facePosition);
+            List<int[]> controlPoint = getFaceAtributes(result, facePosition);
+
+        }
+
+        return result;
     }
 
     private static String recognizeFace(List<int[]> controlPoint, int[][] dayatFaceCP) {

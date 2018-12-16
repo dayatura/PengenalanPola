@@ -42,8 +42,8 @@ public class FaceRecogActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
 //        imageView.setImageBitmap(BitmapFactory.decodeFile("/storage/emulated/0/Pictures/LINE/duawaja.jpg"));
-        imageView.setImageBitmap(BitmapFactory.decodeFile("/storage/emulated/0/Pictures/LINE/kk.jpg"));
-        process(imageView);
+//        imageView.setImageBitmap(BitmapFactory.decodeFile("/storage/emulated/0/Pictures/LINE/kk.jpg"));
+//        process(imageView);
 //        edgeDetect(imageView);
     }
 
@@ -100,6 +100,7 @@ public class FaceRecogActivity extends AppCompatActivity {
             public void run() {
                 Bitmap image = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
                 List<String> listName = Face.detectFace(image);
+                image = Face.drawControlPointFace(image);
                 String[] nameFaces = listName.toArray(new String[listName.size()]);
                 String result = "";
                 for (String nameFace:nameFaces) result = result + nameFace + " ";
