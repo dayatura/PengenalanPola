@@ -6,6 +6,9 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -84,6 +87,16 @@
             android:layout_margin="12dp"
             android:onClick="loadFaceRecog"
             android:text="Face Recognition" />
+
+        <Button
+            android:id="@+id/btnMenuFourier"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="loadFourier"
+            android:text="Fourier Transform" />
+
     </LinearLayout>
+    </ScrollView>
 
 </android.support.constraint.ConstraintLayout>

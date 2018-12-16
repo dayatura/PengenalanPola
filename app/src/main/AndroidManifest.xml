@@ -39,10 +39,11 @@
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".featureActivity"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".FaceRecogActivity"
-            android:parentActivityName=".MainActivity"></activity>
+            android:parentActivityName=".MainActivity" />
+        <activity android:name=".FourierActivity"></activity>
     </application>
 
 </manifest>

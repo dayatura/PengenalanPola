@@ -17,5 +17,9 @@ public class VectorUtil {
     }
 
 
-
+    public static int[][] rotateMatrix(int[][] filter) {
+        return new int[][] {{filter[0][1],  filter[0][2],   filter[1][2]  },
+                            {filter[0][0],  filter[1][1],   filter[2][2]  },
+                            {filter[1][0],  filter[2][0],   filter[2][1]  }};
+    }
 }

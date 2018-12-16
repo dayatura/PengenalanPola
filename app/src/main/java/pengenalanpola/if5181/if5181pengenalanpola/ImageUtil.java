@@ -9,10 +9,14 @@ import android.widget.TextView;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 
 import static android.content.ContentValues.TAG;
+import static java.lang.Math.abs;
+import static java.lang.Math.log;
+
 import pengenalanpola.if5181.if5181pengenalanpola.VectorUtil;
 
 public class ImageUtil {
@@ -765,6 +769,7 @@ public class ImageUtil {
                     && (pt % width) <= xmax
                     && ymin <= (pt / width)
                     && (pt / width) <= ymax) {
+
                 pixels[pt] = (pixels[pt] & 0xff000000);
 
                 if (pt % width < pxmin) pxmin = pt % width;
@@ -782,14 +787,15 @@ public class ImageUtil {
         return (pxmax + pxmin) / 2 + (pymax + pymin) / 2 * width;
     }
 
-    public static Bitmap edgeDetection(Bitmap source) {
+    public static Bitmap edgeDetection(Bitmap source, int kernel) {
         Bitmap result = source.copy(source.getConfig(), true);
 
-        result = ImageUtil.getSmoothingImage(result)[0];
+//        result = ImageUtil.getSmoothingImage(result)[0];
+//        result = ImageUtil.getCleanImage(result);
         int height = result.getHeight();
         int width = result.getWidth();
 
-        int treshold = 70;
+        int treshold = 160;
 
         int [][][] sobel = {{{1, 0, -1},
                              {2, 0, -2},
@@ -799,11 +805,29 @@ public class ImageUtil {
                               {0, 0, 0},
                               {-1, -2, -1}}};
 
+        int [][][] prewitt = {{{1, 0, -1},
+                            {1, 0, -1},
+                            {1, 0, -1}},
+
+                            {{1, 1, 1},
+                            {0, 0, 0},
+                            {-1, -1, -1}}};
+
+        int [][][] scharr = {{{3, 0, -3},
+                {10, 0, -10},
+                {3, 0, -3}},
+
+                {{3, 10, 3},
+                        {0, 0, 0},
+                        {-3, -10, -3}}};
 
 
         int [][][] filter = sobel;
+        if (kernel == 1) filter = sobel;
+        else if (kernel == 2) filter = prewitt;
+        else if (kernel == 3) filter = scharr;
 
-        result = ImageUtil.getGrayscaleImage(result);
+//        result = ImageUtil.getGrayscaleImage(result);
 
         int [][] Gx = filter[0];
         int [][] Gy = filter[1];
@@ -827,7 +851,8 @@ public class ImageUtil {
 
 
                 int sum = (int) Math.sqrt(Math.pow(sumX,2)+Math.pow(sumY,2));
-                sum = sum < 70 ? 0 : sum;
+//                sum = sum < treshold ? 0 : sum;
+                sum = sum < treshold || sum > 255 ? 0 : 255;
 //                sum = sumY;
                 ImageUtil.setPixelColor(result,j+1,i+1, sum, sum, sum);
 //                int [][] subImage = {{},{},{}};
@@ -836,5 +861,143 @@ public class ImageUtil {
         }
 
         return result;
+    }
+
+    public static Bitmap getCleanImage(Bitmap bitmap) {
+
+        Bitmap resultA = bitmap.copy(bitmap.getConfig(), true);
+        int count;
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int[] color;
+        int sum;
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                List<Integer> pixelColor = new ArrayList<>();
+                for (int a = -1; a <= 1; a++) {
+                    for (int b = -1; b <= 1; b++) {
+                        if (0 <= i + a && i + a < width && 0 <= j + b && j + b < height) {
+                            color = getPixelColor(bitmap, i + a, j + b);
+                            pixelColor.add(color[GRAYSCALE]);
+                        }
+                    }
+                }
+                sum = Collections.max(pixelColor);
+                setPixelColor(resultA, i, j, sum, sum, sum);
+
+            }
+        }
+
+        return resultA;
+
+    }
+
+    public static Bitmap edgeDetection2(Bitmap image) {
+        Bitmap result = image.copy(image.getConfig(), true);
+
+//        result = getCleanImage(result);
+        int height = result.getHeight();
+        int width = result.getWidth();
+
+        int treshold = 140;
+
+        int [][] filter = {{5,5,5},{-3,0,-3},{-3,-3,-3}};
+
+
+        for (int i=0; i<height-2; i++){
+            for (int j=0; j<width-2; j++){
+
+                List<Integer> magnitudes = new ArrayList<>();
+
+                for (int k = 0; k < 8; k++){
+
+                    int magnitude = 0;
+                    for (int m = 0; m<3; m++){
+                        for (int n = 0; n<3; n++){
+                            int pixelColor = ImageUtil.getPixelColor(image,m+j,n+i)[0];
+                            magnitude += pixelColor * filter[m][n];
+                        }
+                    }
+
+                    magnitudes.add(magnitude);
+//                    if(k%==1)
+                    filter = VectorUtil.rotateMatrix(filter);
+                }
+
+                int sum = Collections.max(magnitudes);
+                sum = sum < treshold || sum > 255 ? 0 : sum;
+                ImageUtil.setPixelColor(result,j+1,i+1, sum, sum, sum);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[] getImgSpacDomain(Bitmap bitmap) {
+        double[] imgSpacDomain = new double[bitmap.getWidth()*bitmap.getHeight()];
+
+        for (int i = 0; i < bitmap.getWidth(); i++) {
+            for (int j = 0; j < bitmap.getHeight(); j++) {
+                imgSpacDomain[i + bitmap.getWidth()*j] = getPixelColor(bitmap, i, j)[0];
+            }
+        }
+        return imgSpacDomain;
+    }
+
+    public static Bitmap createBitmapFromArray(double[] imgFreqDomain) {
+        int side = (int) Math.sqrt(imgFreqDomain.length);
+        Bitmap result = Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888);
+
+        for (int i = 0; i < result.getWidth(); i++) {
+            for (int j = 0; j < result.getHeight(); j++) {
+                int pixelColor = (int) imgFreqDomain[i + result.getWidth()*j];
+                setPixelColor(result, i, j, pixelColor, pixelColor, pixelColor);
+            }
+        }
+
+        return result;
+    }
+
+    public static Bitmap squarePadding(Bitmap bitmap) {
+//        Bitmap result = bitmap.copy(bitmap.getConfig(), true);
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+        int sideMax = height > width ? height: width;
+        int side = 2;
+
+        while (side<=sideMax) side <<= 1;
+        side>>=1;
+
+        Bitmap result = Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888);
+
+        for (int i = 0; i < result.getWidth(); i++) {
+            for (int j = 0; j < result.getHeight(); j++) {
+                int[] color = getPixelColor(bitmap, i, j);
+                setPixelColor(result, i, j, color[GRAYSCALE], color[GRAYSCALE], color[GRAYSCALE]);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[] normalize(double[] imgFreqDomain) {
+        double min = (int) imgFreqDomain[0];
+        double max = (int) imgFreqDomain[0];
+
+        for (int i=0; i<imgFreqDomain.length; i++){
+            if (min > imgFreqDomain[i]) min = imgFreqDomain[i];
+            if (max < imgFreqDomain[i]) max = imgFreqDomain[i];
+        }
+        Log.d(TAG, "normalize: " + max + " " + min);
+        double[] normalized = imgFreqDomain;
+
+        double c = 255/ log(1+abs(max));
+        for (int i=0; i<imgFreqDomain.length; i++) {
+//            normalized[i] = c * log(1 + abs(imgFreqDomain[i]));
+            if (normalized[i] < 0)normalized[i] = 0;
+//            if(i < 0 || i > 255) Log.d(TAG, "normalize: WOUYYYY");
+        }
+        return normalized;
     }
 }

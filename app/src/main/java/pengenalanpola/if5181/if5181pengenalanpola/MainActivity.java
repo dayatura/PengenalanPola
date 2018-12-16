@@ -52,4 +52,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, FaceRecogActivity.class);
         startActivity(intent);
     }
+
+    public void loadFourier(View view) {
+        Intent intent = new Intent(MainActivity.this, FourierActivity.class);
+        startActivity(intent);
+    }
 }

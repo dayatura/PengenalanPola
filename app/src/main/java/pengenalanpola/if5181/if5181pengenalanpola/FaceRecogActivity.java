@@ -12,12 +12,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.OutputStreamWriter;
+import java.util.List;
 
 public class FaceRecogActivity extends AppCompatActivity {
 
@@ -39,9 +41,10 @@ public class FaceRecogActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
+//        imageView.setImageBitmap(BitmapFactory.decodeFile("/storage/emulated/0/Pictures/LINE/duawaja.jpg"));
         imageView.setImageBitmap(BitmapFactory.decodeFile("/storage/emulated/0/Pictures/LINE/kk.jpg"));
-//        process(imageView);
-        edgeDetect(imageView);
+        process(imageView);
+//        edgeDetect(imageView);
     }
 
     @Override
@@ -96,13 +99,23 @@ public class FaceRecogActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             public void run() {
                 Bitmap image = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-                image = Face.detectFace(image);
+                List<String> listName = Face.detectFace(image);
+                String[] nameFaces = listName.toArray(new String[listName.size()]);
+                String result = "";
+                for (String nameFace:nameFaces) result = result + nameFace + " ";
                 final Bitmap finalBitmap = image;
                 imageView.post(new Runnable() {
                     public void run() {
                         imageView.setImageBitmap(finalBitmap);
                     }
                 });
+                final String finalResult = result;
+                textView.post(new Runnable() {
+                    public void run() {
+                        textView.setText(finalResult);
+                    }
+                });
+
             }
         }).start();
 
@@ -110,10 +123,28 @@ public class FaceRecogActivity extends AppCompatActivity {
 
     public void edgeDetect(View view) {
 
+//        Log.d("ID", "button: " + view.getId());
+        final int idButton = view.getId();
+
         new Thread(new Runnable() {
             public void run() {
                 Bitmap image = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-                image = ImageUtil.edgeDetection(image);
+                double newWidth = 200.0;
+                int kernel = 1;
+                image = Bitmap.createScaledBitmap(
+                        image, (int)newWidth, (int)(image.getHeight()*(newWidth/image.getWidth())),true);
+
+//                image = ImageUtil.getCleanImage(image);
+//                image = ImageUtil.getSmoothingImage(image)[0];
+                if (idButton == 2131165219) image = ImageUtil.edgeDetection2(image);
+                else {
+                    if (idButton == 2131165231) kernel = 1;
+                    else if (idButton == 2131165229) kernel = 2;
+                    else if (idButton == 2131165230) kernel = 3;
+                    image = ImageUtil.edgeDetection(image, kernel);
+                }
+
+//                image = Thinning.zShuen(image);
                 final Bitmap finalBitmap = image;
                 imageView.post(new Runnable() {
                     public void run() {
